@@ -4,6 +4,7 @@ in vec2 uv;
 
 uniform vec3 color;
 uniform mat4 inverseViewProjection;
+uniform vec2 resolution;
 
 struct Ellipsoid
 {
@@ -15,21 +16,9 @@ uniform Ellipsoid ellipsoid;
 
 out vec4 FragColor;
 
-void main()
+vec3 castRay(vec3 rayOrigin, vec3 rayDir, Ellipsoid ellipsoid, vec3 backgroundColor)
 {
-	vec4 nearPoint = vec4(uv, -1.0, 1.0);
-	vec4 farPoint  = vec4(uv,  1.0, 1.0);
-
-	vec4 nearWorld = inverseViewProjection * nearPoint;
-	vec4 farWorld  = inverseViewProjection * farPoint;
-
-	nearWorld /= nearWorld.w;
-	farWorld  /= farWorld.w;
-
-	vec3 rayOrigin = nearWorld.xyz;
-	vec3 rayDir = normalize(farWorld.xyz - nearWorld.xyz);
-
-	// solving the equation of the ellipsoid, in a simplified form
+// solving the equation of the ellipsoid, in a simplified form
 	vec3 oc = rayOrigin - ellipsoid.center;
 	float a = ellipsoid.radii.x;
 	float b = ellipsoid.radii.y;
@@ -56,8 +45,7 @@ void main()
 	float delta = B*B - 4.0*A*C;
 	if(delta < 0.0)
 	{
-		FragColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-		return;
+		return backgroundColor;
 	}
 
 	float sqrtD = sqrt(delta);
@@ -72,8 +60,7 @@ void main()
 
 	if(t == 1e20)
 	{
-		FragColor = vec4(0,0,0,1);
-		return;
+		return backgroundColor;
 	}
 
 	vec3 hitPoint = rayOrigin + t * rayDir;
@@ -87,6 +74,34 @@ void main()
 	);
 
 	normal = normalize(normal);
+	return normal;
+}
 
-	FragColor = vec4(normal, 1.0f);
+void main()
+{
+	vec2 pixelSizeInNDC = 2.0 / resolution;
+
+	vec3 color = vec3(0.0f);
+	for(int i=0; i<16; i++)
+	{
+		float seed = uv.x + uv.y * 133.0 + float(i) * 256.0;
+		vec2 randomJitter = vec2(fract(sin(seed)*43758.5453), fract(cos(seed)*43758.5453)) - 0.5;
+		vec2 uvJittered = uv + randomJitter * pixelSizeInNDC;
+		vec4 nearPoint = vec4(uvJittered, -1.0, 1.0);
+		vec4 farPoint  = vec4(uvJittered,  1.0, 1.0);
+
+		vec4 nearWorld = inverseViewProjection * nearPoint;
+		vec4 farWorld  = inverseViewProjection * farPoint;
+
+		nearWorld /= nearWorld.w;
+		farWorld  /= farWorld.w;
+
+		vec3 rayOrigin = nearWorld.xyz;
+		vec3 rayDir = normalize(farWorld.xyz - nearWorld.xyz);
+
+		color += castRay(rayOrigin, rayDir, ellipsoid, vec3(0.0f));
+	}
+	color /= 16.0f;
+
+	FragColor = vec4(color, 1.0f);
 }
