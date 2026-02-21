@@ -35,3 +35,10 @@ void Plane::Draw(Shader& shader)
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 }
+
+//Ellipsoid class functions
+Ellipsoid::Ellipsoid(float a, float b, float c, float x0, float y0, float z0)
+{
+	radii = glm::vec3(a, b, c);
+	center = glm::vec3(x0, y0, z0);
+}

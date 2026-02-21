@@ -19,6 +19,7 @@ public:
 	Camera camera;
 	Shader shader;
 	Plane plane;
+	Ellipsoid ellipsoid = Ellipsoid(0.1f, 1.0f, 0.3f, 0.0f, 0.0f, 0.0f);
 	void DrawScene();
 	void Scale(glm::vec3 s);
 	void Rotate(float angle, glm::vec3 axis);

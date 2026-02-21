@@ -18,11 +18,11 @@ glm::mat4 Camera::view()
 }
 glm::mat4 Camera::projection()
 {
-	float e = 0.0f;
+	//float e = 0.0f;
 	glm::mat4 projection;
 	projection = glm::perspective(glm::radians(zoom), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
-	float r = 5.0f;
-	projection = glm::mat4(glm::vec4(1.0f,0.0f,0.0f,0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 0.0f), glm::vec4(-e/2/r, 0.0f, 0.0f, -1.0f/r), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	//float r = 5.0f;
+	//projection = glm::mat4(glm::vec4(1.0f,0.0f,0.0f,0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 0.0f), glm::vec4(-e/2/r, 0.0f, 0.0f, -1.0f/r), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 	return projection;
 }
 glm::mat4 Camera::inverseViewProjection()

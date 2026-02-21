@@ -17,5 +17,12 @@ public:
 protected:
 	unsigned int VAO, VBO, EBO;
 };
+class Ellipsoid
+{
+public:
+	Ellipsoid(float a, float b, float c, float x0, float y0, float z0);
+	glm::vec3 center;
+	glm::vec3 radii;
+};
 
 #endif
