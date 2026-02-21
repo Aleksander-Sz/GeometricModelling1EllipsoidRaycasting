@@ -11,8 +11,13 @@ struct Ellipsoid
 	vec3 center;
 	vec3 radii;
 };
-
 uniform Ellipsoid ellipsoid;
+
+struct Light
+{
+	float intensity;
+};
+uniform Light light;
 
 out vec4 FragColor;
 
@@ -74,7 +79,17 @@ vec3 castRay(vec3 rayOrigin, vec3 rayDir, Ellipsoid ellipsoid, vec3 backgroundCo
 	);
 
 	normal = normalize(normal);
-	return normal;
+
+	vec3 viewDir = normalize(rayOrigin - hitPoint);
+	vec3 reflectDir = reflect(rayDir, normal);
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0f), 16);
+	vec3 specular = spec * vec3(light.intensity);
+	float constantAF = 1.0f, linearAF = 0.09f, quadraticAF = 0.032f; // attenuation factors
+	float attenuation = 1.0 / (constantAF + linearAF * t + quadraticAF * (t * t));
+	vec3 ambient = vec3(0.2f);
+	vec3 finalColor = (specular * attenuation + ambient) * vec3(1.0f,1.0f,0.1f);
+
+	return finalColor;
 }
 
 void main()

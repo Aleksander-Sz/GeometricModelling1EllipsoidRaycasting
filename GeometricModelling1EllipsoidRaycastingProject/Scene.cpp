@@ -72,6 +72,7 @@ void Scene::DrawScene()
     shader.setMat4("projection", camera.projection());
     shader.setMat4("inverseViewProjection", camera.inverseViewProjection());
 	shader.setVec2("resolution", glm::vec2(camera.windowWidth, camera.windowHeight));
+	shader.setFloat("light.intensity", 1.0f);
 
     //Ellipsoid parameters
 	shader.setVec3("ellipsoid.center", ellipsoid.center);
