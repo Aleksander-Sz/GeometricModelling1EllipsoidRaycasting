@@ -6,6 +6,7 @@
 #include "../Camera.h"
 #include "../Shapes.h"
 #include "../Scene.h"
+#include "../AlexAlgebra.h"
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
@@ -164,6 +165,16 @@ int main()
 	Shader ourShader("Shaders/VertexShader.glsl","Shaders/FragmentShader.glsl");
 	Scene sceneObject = Scene(900, 900, ourShader);
 	scene = &sceneObject;
+
+	aa::vec2 test(1.0f,0.1f);
+	std::cout << test.x << "\n";
+	std::cout << test.y << "\n";
+	aa::vec3 test2 = { 1.0f, 0.5f, 0.1f };
+	std::cout << test2.x << "\n";
+	std::cout << test2.y << "\n";
+	std::cout << test2.z << "\n";
+	std::cout << test2.xy.x << "\n";
+	std::cout << test2.yz.y << "\n";
 
 	// Rendering commands here
 
