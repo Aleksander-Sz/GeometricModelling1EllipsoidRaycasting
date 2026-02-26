@@ -20,12 +20,15 @@ public:
 	Camera camera;
 	Shader shader;
 	Plane plane;
-	Ellipsoid ellipsoid = Ellipsoid(0.1f, 1.0f, 0.3f, 0.0f, 0.0f, 0.0f);
-	void DrawScene();
+	Ellipsoid ellipsoid = Ellipsoid(0.1f, 1.0f, 0.3f);
+	std::vector<uint8_t> framebuffer;
+	GLuint texture;
+	void DrawScene(unsigned int subdivisions);
 	void Scale(aa::vec3 s);
 	void Rotate(float angle, aa::vec3 axis);
 	void Translate(aa::vec3 t);
 	void resetSceneMatrix();
+	unsigned int subdivisions = 1;
 private:
 	aa::mat4 sceneMatrix = aa::mat4(1.0f);
 };

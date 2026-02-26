@@ -4,8 +4,32 @@ Scene::Scene(int windowWidth, int windowHeight, Shader _shader)
 {
 	camera = Camera(windowWidth, windowHeight);
     shader = _shader;
+	framebuffer = std::vector<uint8_t>(windowWidth * windowHeight * 3);
+
+	uint8_t color = 0;
+	for (int i = 0; i < framebuffer.size(); i+=2)
+	{
+		color++;
+		color = color % 256;
+		framebuffer[i] = color;
+	}
+
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glTexImage2D(
+		GL_TEXTURE_2D,
+		0,
+		GL_RGB,
+		windowWidth,
+		windowHeight,
+		0,
+		GL_RGB,
+		GL_UNSIGNED_BYTE,
+		framebuffer.data()
+	);
 }
-void Scene::DrawScene()
+void Scene::DrawScene(unsigned int subdivisions)
 {
 	//ImGui
 	ImGui_ImplOpenGL3_NewFrame();
@@ -57,26 +81,65 @@ void Scene::DrawScene()
 	ImGui::Separator();
 	if (ImGui::CollapsingHeader("Ellipsoid parameters:"))
 	{
-		ImGui::InputFloat3("Center", aa::value_ptr(ellipsoid.center));
+		//ImGui::InputFloat3("Center", aa::value_ptr(ellipsoid.center));
 		ImGui::InputFloat3("Radii", aa::value_ptr(ellipsoid.radii));
 	}
 	ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
 
 	ImGui::End();
 
+	// Rendering the ellipsoid to the texture
+	int chunkWidth = camera.windowWidth / subdivisions;
+	int chunkHeight = camera.windowHeight / subdivisions;
+
+	for (int i = 0; i < subdivisions; i++)
+	{
+		for (int j = 0; j < subdivisions; j++)
+		{
+			int chunkCenterX = (i + 0.5f) * chunkWidth;
+			int chunkCenterY = (j + 0.5f) * chunkHeight;
+			aa::vec3 color = ellipsoid.getColor(aa::vec2(chunkCenterX, chunkCenterY));
+			for (int localX = 0; localX < chunkWidth; localX++)
+			{
+				for (int localY = 0; localY < chunkHeight; localY++)
+				{
+					int globalX = i * chunkWidth + localX;
+					int globalY = j * chunkHeight + localY;
+
+					int pointer = (globalX + globalY * camera.windowWidth) * 3;
+
+					framebuffer[pointer] = (uint8_t)color.r;
+					framebuffer[pointer + 1] = (uint8_t)color.g;
+					framebuffer[pointer + 2] = (uint8_t)color.b;
+				}
+			}
+		}
+	}
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    shader.use();
-    shader.setMat4("view", camera.view());
-    shader.setMat4("projection", camera.projection());
-    shader.setMat4("inverseViewProjection", camera.inverseViewProjection());
-	shader.setVec2("resolution", aa::vec2(camera.windowWidth, camera.windowHeight));
-	shader.setFloat("light.intensity", 1.0f);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4); // default is 4; set to 1 if width*3 is not multiple of 4
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexSubImage2D(
+		GL_TEXTURE_2D,
+		0,
+		0, 0,
+		camera.windowWidth,
+		camera.windowHeight,
+		GL_RGB,
+		GL_UNSIGNED_BYTE,
+		framebuffer.data()
+	);
 
-    //Ellipsoid parameters
-	shader.setVec3("ellipsoid.center", ellipsoid.center);
-	shader.setVec3("ellipsoid.radii", ellipsoid.radii);
+    shader.use();
+	shader.setInt("frame", 0);
+	
 
 	plane.Draw(shader);
 	ImGui::Render();

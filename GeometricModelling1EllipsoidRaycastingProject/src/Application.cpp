@@ -12,6 +12,8 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#define MIN_SUBDIVISIONS 4;
+
 Scene* scene;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -28,18 +30,21 @@ void processInput(GLFWwindow* window)
 	const float cameraDisplacement = cameraSpeed * scene->deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		scene->camera.cameraPos += cameraDisplacement * aa::normalize(scene->camera.cameraFront);
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 		scene->camera.cameraPos -= cameraDisplacement * aa::normalize(scene->camera.cameraFront);
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		scene->camera.cameraPos -= cameraDisplacement * aa::normalize(cross(scene->camera.cameraFront, scene->camera.cameraUp));
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		scene->camera.cameraPos += cameraDisplacement * aa::normalize(cross(scene->camera.cameraFront, scene->camera.cameraUp));
-	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+	else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
 		scene->camera.cameraPos += cameraDisplacement * aa::normalize(cross(cross(scene->camera.cameraFront, scene->camera.cameraUp), scene->camera.cameraFront));
-	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+	else if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 		scene->camera.cameraPos -= cameraDisplacement * aa::normalize(cross(cross(scene->camera.cameraFront, scene->camera.cameraUp), scene->camera.cameraFront));
+	else
+		return;
+	scene->subdivisions = MIN_SUBDIVISIONS;
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -85,6 +90,8 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 			scene->camera.pitch = 89.0f;
 		if (scene->camera.pitch < -89.0f)
 			scene->camera.pitch = -89.0f;
+
+		scene->subdivisions = MIN_SUBDIVISIONS;
 	}
 	scene->lastX = xpos;
 	scene->lastY = ypos;
@@ -187,7 +194,10 @@ int main()
 		processInput(window);
 		//rendering commands here
 		
-		scene->DrawScene();
+		scene->DrawScene(scene->subdivisions);
+		scene->subdivisions++;
+		if (scene->subdivisions > scene->camera.windowWidth)
+			scene->subdivisions = scene->camera.windowWidth;
 		// -----
 		float currentFrame = glfwGetTime();
 		scene->deltaTime = currentFrame - scene->lastFrame;

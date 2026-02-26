@@ -206,6 +206,13 @@ namespace aa {
 			columns[2] = z;
 			columns[3] = w;
 		}
+		mat4(float a, float b, float c, float d)
+		{
+			columns[0][0] = a;
+			columns[1][1] = b;
+			columns[2][2] = c;
+			columns[3][3] = d;
+		}
 
 		// Operators
 		mat4 operator+(const mat4& b) const {

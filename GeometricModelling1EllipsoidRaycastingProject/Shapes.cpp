@@ -37,8 +37,13 @@ void Plane::Draw(Shader& shader)
 }
 
 //Ellipsoid class functions
-Ellipsoid::Ellipsoid(float a, float b, float c, float x0, float y0, float z0)
+Ellipsoid::Ellipsoid(float a, float b, float c)
 {
 	radii = aa::vec3(a, b, c);
-	center = aa::vec3(x0, y0, z0);
+	ellipsoidMatrix = aa::mat4(a, b, c, 1);
+}
+aa::vec3 Ellipsoid::getColor(aa::vec2 coords)
+{
+	ellipsoidMatrix = aa::mat4(radii.x, radii.y, radii.z, 1);
+	return aa::vec3(coords, 0.5f);
 }

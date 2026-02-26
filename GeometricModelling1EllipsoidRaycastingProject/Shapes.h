@@ -20,9 +20,10 @@ protected:
 class Ellipsoid
 {
 public:
-	Ellipsoid(float a, float b, float c, float x0, float y0, float z0);
-	aa::vec3 center;
+	Ellipsoid(float a, float b, float c);
 	aa::vec3 radii;
+	aa::mat4 ellipsoidMatrix;
+	aa::vec3 getColor(aa::vec2 coords);
 };
 
 #endif
