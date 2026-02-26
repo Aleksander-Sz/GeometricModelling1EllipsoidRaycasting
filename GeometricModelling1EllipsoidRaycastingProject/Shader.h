@@ -6,9 +6,8 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include <glm.hpp>
-#include <gtc/matrix_transform.hpp>
-#include <gtc/type_ptr.hpp>
+#include "AlexAlgebra.h"
+
 class Shader
 {
 public:
@@ -23,9 +22,9 @@ public:
 	void setBool(const std::string& name, bool value) const;
 	void setInt(const std::string& name, int value) const;
 	void setFloat(const std::string& name, float value) const;
-	void setMat4(const std::string& name, glm::mat4 value) const;
-	void setVec3(const std::string& name, glm::vec3 value) const;
-	void setVec4(const std::string& name, glm::vec4 value) const;
-	void setVec2(const std::string& name, glm::vec2 value) const;
+	void setMat4(const std::string& name, aa::mat4 value) const;
+	void setVec3(const std::string& name, aa::vec3 value) const;
+	void setVec4(const std::string& name, aa::vec4 value) const;
+	void setVec2(const std::string& name, aa::vec2 value) const;
 };
 #endif

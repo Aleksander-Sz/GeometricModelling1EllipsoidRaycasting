@@ -39,6 +39,6 @@ void Plane::Draw(Shader& shader)
 //Ellipsoid class functions
 Ellipsoid::Ellipsoid(float a, float b, float c, float x0, float y0, float z0)
 {
-	radii = glm::vec3(a, b, c);
-	center = glm::vec3(x0, y0, z0);
+	radii = aa::vec3(a, b, c);
+	center = aa::vec3(x0, y0, z0);
 }

@@ -1,9 +1,16 @@
 #ifndef ALEX_ALGEBRA_H
 #define ALEX_ALGEBRA_H
 
+#include <cmath>
+
 namespace aa {
 	
 	// Basic structures
+	struct vec2;
+	struct vec3;
+	struct vec4;
+	struct mat4;
+
 	struct vec2 {
 		float x, y;
 		
@@ -35,12 +42,20 @@ namespace aa {
 			y += v.y;
 			return *this;
 		}
+		vec2& operator-=(const vec2& v)
+		{
+			x -= v.x;
+			y -= v.y;
+			return *this;
+		}
 	};
 
 	struct vec3 {
 		union {
 			struct { float x, y, z; };
 			struct { float r, g, b; };
+			struct { vec2 xy; float z_; };
+			struct { float x_; vec2 yz; };
 		};
 
 		// Constructors
@@ -74,12 +89,31 @@ namespace aa {
 			z += v.z;
 			return *this;
 		}
+		vec3& operator-=(const vec3& v)
+		{
+			x -= v.x;
+			y -= v.y;
+			z -= v.z;
+			return *this;
+		}
+		float& operator[](const int i)
+		{
+			return (&x)[i];
+		}
+		const float& operator[](const int i) const
+		{
+			return (&x)[i];
+		}
 	};
 
 	struct vec4 {
 		union {
 			struct { float x, y, z, w; };
 			struct { float r, g, b, a; };
+			struct { vec2 xy, zw; };
+			struct { vec3 xyz; float w_; };
+			struct { float x_; vec3 yzw; };
+			struct { float x__; vec2 yz; float w__; };
 		};
 
 		// Constructors
@@ -115,6 +149,14 @@ namespace aa {
 			w += v.w;
 			return *this;
 		}
+		vec4& operator-=(const vec4& v)
+		{
+			x -= v.x;
+			y -= v.y;
+			z -= v.z;
+			w -= v.w;
+			return *this;
+		}
 		float& operator[](const int i)
 		{
 			return (&x)[i];
@@ -123,6 +165,19 @@ namespace aa {
 		{
 			return (&x)[i];
 		}
+		/*vec4 operator*(const mat4& b) const
+		{
+			vec4 a = *this;
+			vec4 result;
+
+			for (int i = 0; i < 4; i++)
+				result[i] =
+				a[0] * b[i][0] +
+				a[1] * b[i][1] +
+				a[2] * b[i][2] +
+				a[3] * b[i][3];
+			return result;
+		}*/
 	};
 
 	struct mat4 {
@@ -131,10 +186,29 @@ namespace aa {
 		const vec4& operator[](const int i) const { return columns[i]; }
 
 		// Constructors
-		
+		mat4() {
+			for (int i = 0; i < 4; i++)
+				for (int j = 0; j < 4; j++)
+					columns[i][j] = 0.0f;
+		};
+		mat4(float scalar) {
+			for (int i = 0; i < 4; i++)
+				for (int j = 0; j < 4; j++)
+					if(i==j)
+						columns[i][j] = scalar;
+					else
+						columns[i][j] = 0.0f;
+		};
+		mat4(vec4 x, vec4 y, vec4 z, vec4 w)
+		{
+			columns[0] = x;
+			columns[1] = y;
+			columns[2] = z;
+			columns[3] = w;
+		}
 
 		// Operators
-		mat4 operator+(const mat4& b) {
+		mat4 operator+(const mat4& b) const {
 			mat4 a = *this;
 			mat4 result;
 
@@ -143,12 +217,12 @@ namespace aa {
 					result[i][j] = a[i][j] + b[i][j];
 			return result;
 		}
-		mat4 operator*(const mat4& b) {
+		mat4 operator*(const mat4& b) const {
 			mat4 a = *this;
 			mat4 result;
 
-			for (int i = 0; i < 4; ++i)
-				for (int j = 0; j < 4; ++j)
+			for (int i = 0; i < 4; i++)
+				for (int j = 0; j < 4; j++)
 					result[i][j] =
 					a[0][j] * b[i][0] +
 					a[1][j] * b[i][1] +
@@ -157,8 +231,52 @@ namespace aa {
 
 			return result;
 		}
+		vec4 operator*(const vec4& b) const {
+			mat4 a = *this;
+			vec4 result;
+
+			for (int i = 0; i < 4; i++)
+				result[i] =
+				a[0][i] * b[0] +
+				a[1][i] * b[1] +
+				a[2][i] * b[2] +
+				a[3][i] * b[3];
+			return result;
+		}
 	};
 
+	// Operator overloading
+
+	vec2 operator*(float scalar, vec2 v);
+	vec3 operator*(float scalar, vec3 v);
+	vec4 operator*(float scalar, vec4 v);
+
+	// Functions
+
+	float dot(vec2 a, vec2 b);
+	float dot(vec3 a, vec3 b);
+	float dot(vec4 a, vec4 b);
+
+	vec3 cross(vec3 a, vec3 b);
+
+	float length(vec2 a);
+	float length(vec3 a);
+	float length(vec4 a);
+
+	vec2 normalize(vec2 a);
+	vec3 normalize(vec3 a);
+	vec4 normalize(vec4 a);
+
+	float radians(float deg);
+
+	float* value_ptr(vec2& a);
+	float* value_ptr(vec3& a);
+	float* value_ptr(vec4& a);
+	float* value_ptr(mat4& a);
+
+	mat4 lookAt(vec3 eye, vec3 center, vec3 up);
+
+	mat4 inverse(const mat4& m);
 };
 
 

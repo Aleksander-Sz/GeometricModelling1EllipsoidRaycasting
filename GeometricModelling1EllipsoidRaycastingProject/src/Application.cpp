@@ -7,9 +7,6 @@
 #include "../Shapes.h"
 #include "../Scene.h"
 #include "../AlexAlgebra.h"
-#include <glm.hpp>
-#include <gtc/matrix_transform.hpp>
-#include <gtc/type_ptr.hpp>
 #include <vector>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -32,17 +29,17 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		scene->camera.cameraPos += cameraDisplacement * glm::normalize(scene->camera.cameraFront);
+		scene->camera.cameraPos += cameraDisplacement * aa::normalize(scene->camera.cameraFront);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		scene->camera.cameraPos -= cameraDisplacement * glm::normalize(scene->camera.cameraFront);
+		scene->camera.cameraPos -= cameraDisplacement * aa::normalize(scene->camera.cameraFront);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		scene->camera.cameraPos -= cameraDisplacement * glm::normalize(cross(scene->camera.cameraFront, scene->camera.cameraUp));
+		scene->camera.cameraPos -= cameraDisplacement * aa::normalize(cross(scene->camera.cameraFront, scene->camera.cameraUp));
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		scene->camera.cameraPos += cameraDisplacement * glm::normalize(cross(scene->camera.cameraFront, scene->camera.cameraUp));
+		scene->camera.cameraPos += cameraDisplacement * aa::normalize(cross(scene->camera.cameraFront, scene->camera.cameraUp));
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-		scene->camera.cameraPos += cameraDisplacement * glm::normalize(cross(cross(scene->camera.cameraFront, scene->camera.cameraUp), scene->camera.cameraFront));
+		scene->camera.cameraPos += cameraDisplacement * aa::normalize(cross(cross(scene->camera.cameraFront, scene->camera.cameraUp), scene->camera.cameraFront));
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-		scene->camera.cameraPos -= cameraDisplacement * glm::normalize(cross(cross(scene->camera.cameraFront, scene->camera.cameraUp), scene->camera.cameraFront));
+		scene->camera.cameraPos -= cameraDisplacement * aa::normalize(cross(cross(scene->camera.cameraFront, scene->camera.cameraUp), scene->camera.cameraFront));
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
