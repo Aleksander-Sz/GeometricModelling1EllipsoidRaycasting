@@ -28,6 +28,7 @@ Scene::Scene(int windowWidth, int windowHeight, Shader _shader)
 		GL_UNSIGNED_BYTE,
 		framebuffer.data()
 	);
+	ellipsoid.updateSceneMatrix(sceneMatrix);
 }
 void Scene::DrawScene(unsigned int subdivisions)
 {
@@ -79,16 +80,19 @@ void Scene::DrawScene(unsigned int subdivisions)
 		}
 	}
 	ImGui::Separator();
+	static aa::vec3 ellipsoidRadii(0.1f, 0.5f, 0.8f);
 	if (ImGui::CollapsingHeader("Ellipsoid parameters:"))
 	{
 		//ImGui::InputFloat3("Center", aa::value_ptr(ellipsoid.center));
-		ImGui::InputFloat3("Radii", aa::value_ptr(ellipsoid.radii));
+		if (ImGui::InputFloat3("Radii", aa::value_ptr(ellipsoidRadii)))
+			ellipsoid.setRadii(ellipsoidRadii);
 	}
 	ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
 
 	ImGui::End();
 
 	// Rendering the ellipsoid to the texture
+	ellipsoid.updateSceneMatrix(camera.view());
 	int chunkWidth = camera.windowWidth / subdivisions;
 	int chunkHeight = camera.windowHeight / subdivisions;
 
@@ -98,7 +102,9 @@ void Scene::DrawScene(unsigned int subdivisions)
 		{
 			int chunkCenterX = (i + 0.5f) * chunkWidth;
 			int chunkCenterY = (j + 0.5f) * chunkHeight;
-			aa::vec3 color = ellipsoid.getColor(aa::vec2(chunkCenterX, chunkCenterY));
+			float NDCChunkCenterX = (float)chunkCenterX / camera.windowWidth * 2.0f - 1.0f;
+			float NDCChunkCenterY = (float)chunkCenterY / camera.windowHeight * 2.0f - 1.0f;
+			aa::vec3 color = ellipsoid.getColor(aa::vec2(NDCChunkCenterX, NDCChunkCenterY));
 			for (int localX = 0; localX < chunkWidth; localX++)
 			{
 				for (int localY = 0; localY < chunkHeight; localY++)
@@ -108,9 +114,9 @@ void Scene::DrawScene(unsigned int subdivisions)
 
 					int pointer = (globalX + globalY * camera.windowWidth) * 3;
 
-					framebuffer[pointer] = (uint8_t)color.r;
-					framebuffer[pointer + 1] = (uint8_t)color.g;
-					framebuffer[pointer + 2] = (uint8_t)color.b;
+					framebuffer[pointer] = (uint8_t)(color.r * 255.0f);
+					framebuffer[pointer + 1] = (uint8_t)(color.g * 255.0f);
+					framebuffer[pointer + 2] = (uint8_t)(color.b * 255.0f);
 				}
 			}
 		}

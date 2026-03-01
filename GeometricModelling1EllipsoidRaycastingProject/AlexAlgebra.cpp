@@ -250,4 +250,20 @@ namespace aa {
 
 		return result;
 	}
+
+	mat4 transpose(const mat4& m)
+	{
+		mat4 res;
+		for (int i = 0; i < 4; ++i) {
+			for (int j = 0; j < 4; ++j) {
+				res[i][j] = m[j][i];
+			}
+		}
+		return res;
+	}
+
+	vec3 reflect(const vec3& incident, const vec3& normal)
+	{
+		return incident - 2.0f * dot(incident, normal) * normal;
+	}
 }

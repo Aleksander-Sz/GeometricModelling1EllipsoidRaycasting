@@ -8,6 +8,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <iostream>
+#include <math.h>
 
 class Plane
 {
@@ -21,9 +22,17 @@ class Ellipsoid
 {
 public:
 	Ellipsoid(float a, float b, float c);
+	aa::vec3 getColor(aa::vec2 v);
+	void updateSceneMatrix(aa::mat4 _sceneMatrix);
+	void setRadii(aa::vec3 _radii);
+private:
+	aa::mat4 sceneMatrix;
 	aa::vec3 radii;
 	aa::mat4 ellipsoidMatrix;
-	aa::vec3 getColor(aa::vec2 coords);
+	bool dirty = true;
+	void PrepareForDrawing();
+	aa::mat4 Q;
+	float A, B, C, D, E, F, G, H, I, J;
 };
 
 #endif

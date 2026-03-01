@@ -48,6 +48,10 @@ namespace aa {
 			y -= v.y;
 			return *this;
 		}
+		vec2 operator-()
+		{
+			return vec2(-x, -y);
+		}
 	};
 
 	struct vec3 {
@@ -103,6 +107,10 @@ namespace aa {
 		const float& operator[](const int i) const
 		{
 			return (&x)[i];
+		}
+		vec3 operator-()
+		{
+			return vec3(-x, -y, -z);
 		}
 	};
 
@@ -164,6 +172,10 @@ namespace aa {
 		const float& operator[](const int i) const
 		{
 			return (&x)[i];
+		}
+		vec4 operator-()
+		{
+			return vec4(-x, -y, -z, -w);
 		}
 		/*vec4 operator*(const mat4& b) const
 		{
@@ -284,6 +296,8 @@ namespace aa {
 	mat4 lookAt(vec3 eye, vec3 center, vec3 up);
 
 	mat4 inverse(const mat4& m);
+	mat4 transpose(const mat4& m);
+	vec3 reflect(const vec3& incident, const vec3& normal);
 };
 
 

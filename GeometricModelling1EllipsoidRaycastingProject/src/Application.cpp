@@ -11,6 +11,8 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <chrono>
+#include <thread>
 
 #define MIN_SUBDIVISIONS 4;
 
@@ -189,13 +191,14 @@ int main()
 	glViewport(0, 0, windowWidth, windowHeight);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	unsigned int frame = 0;
+
 	while (!glfwWindowShouldClose(window))
 	{
 		processInput(window);
 		//rendering commands here
 		
 		scene->DrawScene(scene->subdivisions);
-		scene->subdivisions++;
+		scene->subdivisions*=2;
 		if (scene->subdivisions > scene->camera.windowWidth)
 			scene->subdivisions = scene->camera.windowWidth;
 		// -----
@@ -206,6 +209,8 @@ int main()
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 		frame++;
+		//std::chrono::milliseconds timespan(100);
+		//std::this_thread::sleep_for(timespan);
 	}
 	glfwTerminate();
 	return 0;
