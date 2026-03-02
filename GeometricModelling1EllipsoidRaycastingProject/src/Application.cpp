@@ -46,7 +46,7 @@ void processInput(GLFWwindow* window)
 		scene->camera.cameraPos -= cameraDisplacement * aa::normalize(cross(cross(scene->camera.cameraFront, scene->camera.cameraUp), scene->camera.cameraFront));
 	else
 		return;
-	scene->subdivisions = MIN_SUBDIVISIONS;
+	scene->resetSubdivisions();
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -93,7 +93,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 		if (scene->camera.pitch < -89.0f)
 			scene->camera.pitch = -89.0f;
 
-		scene->subdivisions = MIN_SUBDIVISIONS;
+		scene->resetSubdivisions();
 	}
 	scene->lastX = xpos;
 	scene->lastY = ypos;
@@ -119,8 +119,8 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-	int windowWidth = 900; // Your desired width
-	int windowHeight = 900; // Your desired height
+	int windowWidth = 896; // Your desired width
+	int windowHeight = 896; // Your desired height
 
 	GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Geometric Modelling 1", NULL, NULL);
 	if (window == NULL)
@@ -169,7 +169,7 @@ int main()
 	ImGui_ImplOpenGL3_Init("#version 330");
 
 	Shader ourShader("Shaders/VertexShader.glsl","Shaders/FragmentShader.glsl");
-	Scene sceneObject = Scene(900, 900, ourShader);
+	Scene sceneObject = Scene(windowWidth, windowHeight, ourShader);
 	scene = &sceneObject;
 
 	aa::vec2 test(1.0f,0.1f);
@@ -192,6 +192,13 @@ int main()
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	unsigned int frame = 0;
 
+	glActiveTexture(GL_TEXTURE0);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4); // default is 4; set to 1 if width*3 is not multiple of 4
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
 	while (!glfwWindowShouldClose(window))
 	{
 		processInput(window);
@@ -199,8 +206,8 @@ int main()
 		
 		scene->DrawScene(scene->subdivisions);
 		scene->subdivisions*=2;
-		if (scene->subdivisions > scene->camera.windowWidth)
-			scene->subdivisions = scene->camera.windowWidth;
+		if (scene->subdivisions > scene->camera.windowWidth*2)
+			scene->subdivisions = scene->camera.windowWidth*2;
 		// -----
 		float currentFrame = glfwGetTime();
 		scene->deltaTime = currentFrame - scene->lastFrame;

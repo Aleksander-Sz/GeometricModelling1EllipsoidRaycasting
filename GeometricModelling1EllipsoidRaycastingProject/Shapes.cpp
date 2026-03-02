@@ -116,7 +116,7 @@ aa::vec3 Ellipsoid::getColor(aa::vec2 v)
 	normal.z = C * x + F * y + H * z + I;
 	normal = aa::normalize(normal);
 	
-	return normal;
+	//return normal;
 
 	aa::vec3 ambient(0.1f, 0.1f, 0.1f), diffuse(0.5f, 0.5f, 0.0f), specular(1.0f, 1.0f, 1.0f);
 	aa::vec3 p(x, y, z);
