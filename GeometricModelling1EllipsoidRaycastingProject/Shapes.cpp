@@ -57,9 +57,8 @@ void Ellipsoid::PrepareForDrawing()
 	ellipsoidMatrix = aa::mat4(1 / radii.x / radii.x, 1 / radii.y / radii.y, 1 / radii.z / radii.z, -1);
 
 	//calculating the final matrix = (M^-1)^T * D * M^-1
-	aa::mat4 D = ellipsoidMatrix;
-	aa::mat4 M = aa::inverse(sceneMatrix);
-	Q = aa::transpose(M) * D * M;
+	aa::mat4 M = /*aa::inverse(*/sceneMatrix;//);
+	Q = aa::transpose(M) * ellipsoidMatrix * M;
 	A = Q[0][0];
 	B = Q[0][1];
 	C = Q[0][2];
@@ -102,9 +101,13 @@ aa::vec3 Ellipsoid::getColor(aa::vec2 v)
 	float z1 = (-C2 - deltaSqrt) / 2.0f / C1;
 	float z2 = (-C2 + deltaSqrt) / 2.0f / C1;
 
+	//std::cout << z1 << ", " << z2 << "\n";
 	float solution = z1;
-	if (z2 > z1)
+	if (z2 < z1 && z2 > 0.0f)
 		solution = z2;
+	//std::cout << "solution: " << solution << "\n";
+	if (solution <= 0.0f)
+		return backgroundColor;
 	float x = v.x;
 	float y = v.y;
 	float z = solution;
@@ -127,8 +130,8 @@ aa::vec3 Ellipsoid::getColor(aa::vec2 v)
 	float diff = std::fmax(dot(normal, lightDirection), 0.0f);
 	aa::vec3 R = reflect(-lightDirection, normal);
 	float spec = pow(std::fmax(dot(R, viewDirection), 0), 8.0f);
-	return
+	return aa::clip(
 		ambient +
 		diffuse * diff +
-		specular * spec;
+		specular * spec);
 }

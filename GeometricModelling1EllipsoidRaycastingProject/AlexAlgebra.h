@@ -286,8 +286,6 @@ namespace aa {
 	vec3 normalize(vec3 a);
 	vec4 normalize(vec4 a);
 
-	float radians(float deg);
-
 	float* value_ptr(vec2& a);
 	float* value_ptr(vec3& a);
 	float* value_ptr(vec4& a);
@@ -298,6 +296,21 @@ namespace aa {
 	mat4 inverse(const mat4& m);
 	mat4 transpose(const mat4& m);
 	vec3 reflect(const vec3& incident, const vec3& normal);
+
+	enum Axis {
+		X, Y, Z
+	};
+	mat4 scale(vec3 factor);
+	mat4 rotate(Axis axis, float angle);
+	mat4 translate(vec3 vector);
+
+	float radians(float degrees);
+	float degrees(float radians);
+
+	float clip(float scalar, float lower = 0.0f, float upper = 1.0f);
+	vec2 clip(vec2 vector, float lower = 0.0f, float upper = 1.0f);
+	vec3 clip(vec3 vector, float lower = 0.0f, float upper = 1.0f);
+	vec4 clip(vec4 vector, float lower = 0.0f, float upper = 1.0f);
 };
 
 

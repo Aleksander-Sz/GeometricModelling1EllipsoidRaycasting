@@ -25,7 +25,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void processInput(GLFWwindow* window)
 {
-	ImGuiIO& io = ImGui::GetIO();
+	/*ImGuiIO& io = ImGui::GetIO();
 	if (io.WantCaptureKeyboard)
 		return;
 	float cameraSpeed = 2.5f;
@@ -46,7 +46,7 @@ void processInput(GLFWwindow* window)
 		scene->camera.cameraPos -= cameraDisplacement * aa::normalize(cross(cross(scene->camera.cameraFront, scene->camera.cameraUp), scene->camera.cameraFront));
 	else
 		return;
-	scene->resetSubdivisions();
+	scene->resetSubdivisions();*/
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -85,13 +85,13 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 		xOffset *= sensitivity;
 		yOffset *= sensitivity;
 
-		scene->camera.yaw -= xOffset;
-		scene->camera.pitch += yOffset;
+		scene->yaw += xOffset;
+		scene->pitch += yOffset;
 
-		if (scene->camera.pitch > 89.0f)
-			scene->camera.pitch = 89.0f;
-		if (scene->camera.pitch < -89.0f)
-			scene->camera.pitch = -89.0f;
+		if (scene->pitch > 89.0f)
+			scene->pitch = 89.0f;
+		if (scene->pitch < -89.0f)
+			scene->pitch = -89.0f;
 
 		scene->resetSubdivisions();
 	}
@@ -101,14 +101,14 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	ImGuiIO& io = ImGui::GetIO();
+	/*ImGuiIO& io = ImGui::GetIO();
 	if (io.WantCaptureMouse)
 		return;
 	scene->camera.zoom -= (float)yoffset;
 	if (scene->camera.zoom < 10.0f)
 		scene->camera.zoom = 10.0f;
 	if (scene->camera.zoom > 45.0f)
-		scene->camera.zoom = 45.0f;
+		scene->camera.zoom = 45.0f;*/
 }
 
 int main()
@@ -206,8 +206,8 @@ int main()
 		
 		scene->DrawScene(scene->subdivisions);
 		scene->subdivisions*=2;
-		if (scene->subdivisions > scene->camera.windowWidth*2)
-			scene->subdivisions = scene->camera.windowWidth*2;
+		if (scene->subdivisions > scene->windowWidth*2)
+			scene->subdivisions = scene->windowWidth*2;
 		// -----
 		float currentFrame = glfwGetTime();
 		scene->deltaTime = currentFrame - scene->lastFrame;

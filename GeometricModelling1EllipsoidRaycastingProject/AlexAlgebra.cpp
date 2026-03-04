@@ -69,11 +69,6 @@ namespace aa {
 		return vec4(a.x / magnitude, a.y / magnitude, a.z / magnitude, a.w / magnitude);
 	}
 
-	float radians(float deg)
-	{
-		return deg * 0.0174532925;
-	}
-
 	float* value_ptr(vec2& a)
 	{
 		return &(a.x);
@@ -265,5 +260,74 @@ namespace aa {
 	vec3 reflect(const vec3& incident, const vec3& normal)
 	{
 		return incident - 2.0f * dot(incident, normal) * normal;
+	}
+
+	mat4 scale(vec3 factor)
+	{
+		return mat4(factor.x, factor.y, factor.z, 1.0f);
+	}
+	mat4 rotate(Axis axis, float angle)
+	{
+		mat4 matrix(1.0f);
+		float s = sin(angle);
+		float c = cos(angle);
+		switch (axis)
+		{
+		case X:
+			matrix[1][1] = c;
+			matrix[1][2] = s;
+			matrix[2][1] = -s;
+			matrix[2][2] = c;
+			return matrix;
+		case Y:
+			matrix[0][0] = c;
+			matrix[2][0] = s;
+			matrix[0][2] = -s;
+			matrix[2][2] = c;
+			return matrix;
+		case Z:
+			matrix[0][0] = c;
+			matrix[0][1] = s;
+			matrix[1][0] = -s;
+			matrix[1][1] = c;
+		}
+		return matrix;
+	}
+	mat4 translate(vec3 vector)
+	{
+		mat4 matrix(1.0f);
+		matrix[3][0] = vector.x;
+		matrix[3][1] = vector.y;
+		matrix[3][2] = vector.z;
+		return matrix;
+	}
+
+	float radians(float degrees)
+	{
+		return degrees * 0.01745329251;
+	}
+	float degrees(float radians)
+	{
+		return radians * 57.2957795131;
+	}
+
+	float clip(float scalar, float lower, float upper)
+	{
+		if (scalar < lower)
+			return lower;
+		if (scalar > upper)
+			return upper;
+	}
+	vec2 clip(vec2 vector, float lower, float upper)
+	{
+		return vec2(clip(vector.x, lower, upper), clip(vector.y, lower, upper));
+	}
+	vec3 clip(vec3 vector, float lower, float upper)
+	{
+		return vec3(clip(vector.x, lower, upper), clip(vector.y, lower, upper), clip(vector.z, lower, upper));
+	}
+	vec4 clip(vec4 vector, float lower, float upper)
+	{
+		return vec4(clip(vector.x, lower, upper), clip(vector.y, lower, upper), clip(vector.z, lower, upper), clip(vector.w, lower, upper));
 	}
 }

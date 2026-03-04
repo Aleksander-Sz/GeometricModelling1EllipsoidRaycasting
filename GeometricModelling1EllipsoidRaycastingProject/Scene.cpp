@@ -1,8 +1,10 @@
 #include "Scene.h"
 
-Scene::Scene(int windowWidth, int windowHeight, Shader _shader)
+Scene::Scene(int _windowWidth, int _windowHeight, Shader _shader)
 {
-	camera = Camera(windowWidth, windowHeight);
+	//camera = Camera(windowWidth, windowHeight);
+	windowWidth = _windowWidth;
+	windowHeight = _windowHeight;
     shader = _shader;
 	framebuffer = std::vector<uint8_t>(windowWidth * windowHeight * 3);
 	wasRendered = std::vector<bool>(windowWidth * windowHeight);
@@ -37,7 +39,7 @@ void Scene::DrawScene(unsigned int subdivisions)
 	ImGui::Begin("Menu");
 	ImGui::Text("Use WASD to move, mouse to look around, scroll to zoom.");
 	ImGui::Separator();
-	if (ImGui::CollapsingHeader("Scene Transformations"))
+	/*if (ImGui::CollapsingHeader("Scene Transformations"))
 	{
 		static aa::vec3 scale(1.0f);
 		static float rotationX = 0.0f;
@@ -76,7 +78,7 @@ void Scene::DrawScene(unsigned int subdivisions)
 			rotationX = rotationY = rotationZ = 0.0f;
 			translation = aa::vec3(0.0f);
 		}
-	}
+	}*/
 	ImGui::Separator();
 	static aa::vec3 ellipsoidRadii(0.1f, 0.5f, 0.8f);
 	if (ImGui::CollapsingHeader("Ellipsoid parameters:"))
@@ -91,9 +93,10 @@ void Scene::DrawScene(unsigned int subdivisions)
 	ImGui::End();
 
 	// Rendering the ellipsoid to the texture
-	ellipsoid.updateSceneMatrix(camera.view());
-	int chunkWidth = camera.windowWidth / subdivisions;
-	int chunkHeight = camera.windowHeight / subdivisions;
+	resetSceneMatrix();
+	ellipsoid.updateSceneMatrix(sceneMatrix);// aa::mat4(1.0f, 1.0f, 1.0f, 1.0f));
+	int chunkWidth = windowWidth / subdivisions;
+	int chunkHeight = windowHeight / subdivisions;
 
 	int totalChunks = subdivisions * subdivisions;
 	int threadCount = std::thread::hardware_concurrency();//std::cout << threadCount;
@@ -121,7 +124,7 @@ void Scene::DrawScene(unsigned int subdivisions)
 						int globalX = i * chunkWidth;
 						int globalY = j * chunkHeight;
 						int pointer =
-							(globalX + globalY * camera.windowWidth);
+							(globalX + globalY * windowWidth);
 						if (wasRendered[pointer])
 						{
 							continue;
@@ -131,9 +134,9 @@ void Scene::DrawScene(unsigned int subdivisions)
 						int chunkCenterY = (j + 0.0f) * chunkHeight;
 
 						float NDCChunkCenterX =
-							(float)chunkCenterX / camera.windowWidth * 2.0f - 1.0f;
+							(float)chunkCenterX / windowWidth * 2.0f - 1.0f;
 						float NDCChunkCenterY =
-							(float)chunkCenterY / camera.windowHeight * 2.0f - 1.0f;
+							(float)chunkCenterY / windowHeight * 2.0f - 1.0f;
 
 						aa::vec3 color =
 							ellipsoid.getColor(
@@ -148,7 +151,7 @@ void Scene::DrawScene(unsigned int subdivisions)
 								globalY = j * chunkHeight + localY;
 
 								pointer =
-									(globalX + globalY * camera.windowWidth) * 3;
+									(globalX + globalY * windowWidth) * 3;
 
 								framebuffer[pointer] =
 									(uint8_t)(color.r * 255.0f);
@@ -174,8 +177,8 @@ void Scene::DrawScene(unsigned int subdivisions)
 		GL_TEXTURE_2D,
 		0,
 		0, 0,
-		camera.windowWidth,
-		camera.windowHeight,
+		windowWidth,
+		windowHeight,
 		GL_RGB,
 		GL_UNSIGNED_BYTE,
 		framebuffer.data()
@@ -188,41 +191,10 @@ void Scene::DrawScene(unsigned int subdivisions)
 	plane.Draw(shader);
 	ImGui::Render();
 }
-void Scene::Scale(aa::vec3 s)
-{
-    //model = aa::scale(model, s);
-    aa::mat4 scaleMatrix = aa::mat4(aa::vec4(s.x, 0.0f, 0.0f, 0.0f), aa::vec4(0.0f, s.y, 0.0f, 0.0f), aa::vec4(0.0f, 0.0f, s.z, 0.0f), aa::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-    sceneMatrix = scaleMatrix * sceneMatrix;
-}
-void Scene::Rotate(float angle, aa::vec3 axis)
-{
-    //model = aa::rotate(model, aa::radians(angle), axis);
-    axis = aa::normalize(axis);
-    float c = cos(aa::radians(angle));
-    float s = sin(aa::radians(angle));
-    aa::mat4 rotationMatrix;
-    if (axis.x == 1.0f)
-        rotationMatrix = aa::mat4(aa::vec4(1.0f, 0.0f, 0.0f, 0.0f), aa::vec4(0.0f, c, s, 0.0f), aa::vec4(0.0f, -s, c, 0.0f), aa::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-    else if (axis.y == 1.0f)
-        rotationMatrix = aa::mat4(aa::vec4(c, 0.0f, -s, 0.0f), aa::vec4(0.0f, 1.0f, 0.0f, 0.0f), aa::vec4(s, 0.0f, c, 0.0f), aa::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-    else if (axis.z == 1.0f)
-        rotationMatrix = aa::mat4(aa::vec4(c, s, 0.0f, 0.0f), aa::vec4(-s, c, 0.0f, 0.0f), aa::vec4(0.0f, 0.0f, 1.0f, 0.0f), aa::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-    else
-    {
-        std::cerr << "Rotation axis must be one of the cardinal axes (x,y,z).\n";
-        return;
-    }
-    sceneMatrix = rotationMatrix * sceneMatrix;
-}
-void Scene::Translate(aa::vec3 t)
-{
-    //model = aa::translate(model, t);
-    aa::mat4 translationMatrix = aa::mat4(aa::vec4(1.0f, 0.0f, 0.0f, 0.0f), aa::vec4(0.0f, 1.0f, 0.0f, 0.0f), aa::vec4(0.0f, 0.0f, 1.0f, 0.0f), aa::vec4(t.x, t.y, t.z, 1.0f));
-    sceneMatrix = translationMatrix * sceneMatrix;
-}
 void Scene::resetSceneMatrix()
 {
-    sceneMatrix = aa::mat4(1.0f);
+	std::cout << "pitch: " << pitch << ", yaw: " << yaw << "\n";
+	sceneMatrix = aa::rotate(aa::Y, aa::radians(yaw)) * aa::rotate(aa::X, aa::radians(pitch)) * aa::translate(aa::vec3(0.0f, 0.0f, -2.0f));
 }
 
 void Scene::resetSubdivisions()
