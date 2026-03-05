@@ -54,21 +54,29 @@ void Ellipsoid::updateSceneMatrix(aa::mat4 _sceneMatrix)
 }
 void Ellipsoid::PrepareForDrawing()
 {
-	ellipsoidMatrix = aa::mat4(1 / radii.x / radii.x, 1 / radii.y / radii.y, 1 / radii.z / radii.z, -1);
+    // build diagonal quadric matrix D = diag(1/a^2, 1/b^2, 1/c^2, -1)
+    ellipsoidMatrix = aa::mat4(
+        aa::vec4(1.0f / (radii.x * radii.x), 0.0f, 0.0f, 0.0f),
+        aa::vec4(0.0f, 1.0f / (radii.y * radii.y), 0.0f, 0.0f),
+        aa::vec4(0.0f, 0.0f, 1.0f / (radii.z * radii.z), 0.0f),
+        aa::vec4(0.0f, 0.0f, 0.0f, -1.0f)
+    );
 
-	//calculating the final matrix = (M^-1)^T * D * M^-1
-	aa::mat4 M = /*aa::inverse(*/sceneMatrix;//);
-	Q = aa::transpose(M) * ellipsoidMatrix * M;
-	A = Q[0][0];
-	B = Q[0][1];
-	C = Q[0][2];
-	D = Q[0][3];
-	E = Q[1][1];
-	F = Q[1][2];
-	G = Q[1][3];
-	H = Q[2][2];
-	I = Q[2][3];
-	J = Q[3][3];
+    // calculating the final matrix = (M^-1)^T * D * M^-1
+    aa::mat4 M = sceneMatrix;
+    Q = aa::transpose(M) * ellipsoidMatrix * M;
+
+    // symmetrize Q coefficients to avoid numerical asymmetry
+    A = Q[0][0];
+    B = 0.5f * (Q[0][1] + Q[1][0]);
+    C = 0.5f * (Q[0][2] + Q[2][0]);
+    D = 0.5f * (Q[0][3] + Q[3][0]);
+    E = Q[1][1];
+    F = 0.5f * (Q[1][2] + Q[2][1]);
+    G = 0.5f * (Q[1][3] + Q[3][1]);
+    H = Q[2][2];
+    I = 0.5f * (Q[2][3] + Q[3][2]);
+    J = Q[3][3];
 }
 aa::vec3 Ellipsoid::getColor(aa::vec2 v)
 {
@@ -97,21 +105,31 @@ aa::vec3 Ellipsoid::getColor(aa::vec2 v)
 	//std::cout << "delta: " << delta << "\n";
 	if (delta < 0.0f)
 		return backgroundColor;
-	float deltaSqrt = sqrt(delta);
-	float z1 = (-C2 - deltaSqrt) / 2.0f / C1;
-	float z2 = (-C2 + deltaSqrt) / 2.0f / C1;
+    float deltaSqrt = sqrt(delta);
+    float z1 = (-C2 - deltaSqrt) / (2.0f * C1);
+    float z2 = (-C2 + deltaSqrt) / (2.0f * C1);
+	z1 += 2.0f;
+	z2 += 2.0f;
 
-	//std::cout << z1 << ", " << z2 << "\n";
-	float solution = z1;
-	if (z2 < z1 && z2 > 0.0f)
-		solution = z2;
-	//std::cout << "solution: " << solution << "\n";
-	if (solution <= 0.0f)
-		return backgroundColor;
+    // pick the nearest positive intersection (both may be valid)
+    float solution = -1.0f;
+    if (z1 > 0.0f) solution = z1;
+    if (z2 > 0.0f && z2 > solution) solution = z2;
+    if (solution <= 0.0f)
+        return backgroundColor;
+	//if (abs(z1) <= 0.01f || abs(z2) <= 0.01f)
+	//	return aa::vec3(1.0f, 0.0f, 0.0f);
 	float x = v.x;
 	float y = v.y;
-	float z = solution;
+	float z = solution - 2.0f;
 
+
+	// Calculating the normal vector
+	//  the normal vector is equal to the gradient of the implicite function at the hit point.
+	//
+	// df/dx = 2(Ax+By+Cz+D)
+	// df/dy = 2(Bx+Ey+Fz+G)
+	// df/dz = 2(Cx+Fy+Hz+I)
 	aa::vec3 normal;
 
 	normal.x = A * x + B * y + C * z + D;
@@ -119,11 +137,11 @@ aa::vec3 Ellipsoid::getColor(aa::vec2 v)
 	normal.z = C * x + F * y + H * z + I;
 	normal = aa::normalize(normal);
 	
-	//return normal;
+	return (normal+1)/2.0f;
 
 	aa::vec3 ambient(0.1f, 0.1f, 0.1f), diffuse(0.5f, 0.5f, 0.0f), specular(1.0f, 1.0f, 1.0f);
 	aa::vec3 p(x, y, z);
-	aa::vec3 lightPos = aa::vec3(10.0f, 10.0f, 0.0f);
+	aa::vec3 lightPos = aa::vec3(0.0f, 0.0f, 0.0f);
 	aa::vec3 cameraPos = aa::vec3(0.0f, 1.0f, -3.0f);
 	aa::vec3 lightDirection = aa::normalize(lightPos - p);
 	aa::vec3 viewDirection = aa::normalize(cameraPos - p);
