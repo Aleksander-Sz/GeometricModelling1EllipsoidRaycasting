@@ -226,6 +226,17 @@ namespace aa {
 			columns[3][3] = d;
 		}
 
+		// Identity constructor
+		static mat4 identity()
+		{
+			mat4 identity_matrix;
+			identity_matrix[0][0] = 1;
+			identity_matrix[1][1] = 1;
+			identity_matrix[2][2] = 1;
+			identity_matrix[3][3] = 1;
+			return identity_matrix;
+		}
+
 		// Operators
 		mat4 operator+(const mat4& b) const {
 			mat4 a = *this;

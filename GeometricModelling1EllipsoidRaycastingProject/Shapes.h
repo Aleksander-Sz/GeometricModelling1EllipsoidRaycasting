@@ -10,6 +10,8 @@
 #include <iostream>
 #include <math.h>
 
+#define STATIC_BACKWARD_OFFSET 0.0f
+
 class Plane
 {
 public:
@@ -22,7 +24,7 @@ class Ellipsoid
 {
 public:
 	Ellipsoid(float a, float b, float c);
-	aa::vec3 getColor(aa::vec2 v, aa::vec3 cameraPos);
+	aa::vec3 getColor(aa::vec2 v, aa::vec3 cameraPos, aa::vec3 lightColor);
 	void updateSceneMatrix(aa::mat4 _sceneMatrix);
 	void setRadii(aa::vec3 _radii);
 private:

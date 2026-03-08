@@ -86,7 +86,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 		yOffset *= sensitivity;
 
 		scene->yaw += xOffset;
-		scene->pitch += yOffset;
+		scene->pitch -= yOffset;
 
 		if (scene->pitch > 89.0f)
 			scene->pitch = 89.0f;
@@ -101,14 +101,15 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	/*ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO& io = ImGui::GetIO();
 	if (io.WantCaptureMouse)
 		return;
-	scene->camera.zoom -= (float)yoffset;
-	if (scene->camera.zoom < 10.0f)
-		scene->camera.zoom = 10.0f;
-	if (scene->camera.zoom > 45.0f)
-		scene->camera.zoom = 45.0f;*/
+	scene->scale -= (float)yoffset * 0.1f;
+	if (scene->scale  < MIN_SCALE)
+		scene->scale = MIN_SCALE;
+	if (scene->scale > MAX_SCALE)
+		scene->scale = MAX_SCALE;
+	scene->resetSubdivisions();
 }
 
 int main()

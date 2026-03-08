@@ -78,7 +78,7 @@ void Ellipsoid::PrepareForDrawing()
     I = 0.5f * (Q[2][3] + Q[3][2]);
     J = Q[3][3];
 }
-aa::vec3 Ellipsoid::getColor(aa::vec2 v, aa::vec3 cameraPos)
+aa::vec3 Ellipsoid::getColor(aa::vec2 v, aa::vec3 cameraPos, aa::vec3 lightColor)
 {
 	if (dirty)
 		PrepareForDrawing();
@@ -108,8 +108,8 @@ aa::vec3 Ellipsoid::getColor(aa::vec2 v, aa::vec3 cameraPos)
     float deltaSqrt = sqrt(delta);
     float z1 = (-C2 - deltaSqrt) / (2.0f * C1);
     float z2 = (-C2 + deltaSqrt) / (2.0f * C1);
-	z1 += 2.0f;
-	z2 += 2.0f;
+	z1 += STATIC_BACKWARD_OFFSET;
+	z2 += STATIC_BACKWARD_OFFSET;
 
     // pick the nearest positive intersection (both may be valid)
     float solution = -1.0f;
@@ -117,11 +117,11 @@ aa::vec3 Ellipsoid::getColor(aa::vec2 v, aa::vec3 cameraPos)
     if (z2 > 0.0f && z2 > solution) solution = z2;
     if (solution <= 0.0f)
         return backgroundColor;
-	//if (abs(z1) <= 0.01f || abs(z2) <= 0.01f)
-	//	return aa::vec3(1.0f, 0.0f, 0.0f);
+	if (abs(z1) <= 0.01f || abs(z2) <= 0.01f)
+		return aa::vec3(1.0f, 0.0f, 0.0f);
 	float x = v.x;
 	float y = v.y;
-	float z = solution - 2.0f;
+	float z = solution - STATIC_BACKWARD_OFFSET;
 
 
 	// Calculating the normal vector
@@ -136,17 +136,20 @@ aa::vec3 Ellipsoid::getColor(aa::vec2 v, aa::vec3 cameraPos)
 	normal.y = B * x + E * y + F * z + G;
 	normal.z = C * x + F * y + H * z + I;
 	normal = -aa::normalize(normal);
+
 	
 	//return (normal+1)/2.0f;
 	//return ( cameraPos + 1.0f ) / 2.0f;
 
-	aa::vec3 ambient(0.1f, 0.1f, 0.1f), diffuse(0.5f, 0.5f, 0.0f), specular(1.0f, 1.0f, 1.0f);
+	aa::vec3 ambient(0.1f, 0.1f, 0.1f), diffuse = lightColor, specular(1.0f, 1.0f, 1.0f);
 	aa::vec3 p(x, y, z);
 	aa::vec3 lightPos = aa::vec3(0.0f,0.0f,-10.0f);
 	aa::vec3 pos(0.0f, 0.0f, -10.0f);
 	aa::vec3 lightDirection = aa::normalize(pos - p);
 	aa::vec3 viewDirection = aa::normalize(pos - p);// return (viewDirection+1.0f)/2.0f;
 	//aa::vec3 lightDirection = viewDirection;
+	if (aa::dot(normal, viewDirection) < 0.0f)
+		return aa::vec3(0.0f, 0.0f, 0.0f);
 	float diff = std::fmax(dot(normal, lightDirection), 0.0f);
 	aa::vec3 R = reflect(-lightDirection, normal);
 	float spec = pow(std::fmax(dot(R, viewDirection), 0), 8.0f);

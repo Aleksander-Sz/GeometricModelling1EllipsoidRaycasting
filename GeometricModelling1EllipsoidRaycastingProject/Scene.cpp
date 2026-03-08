@@ -51,15 +51,32 @@ void Scene::DrawScene(unsigned int subdivisions)
 			resetSceneMatrix();
 			resetSubdivisions();
 		}
-		if (ImGui::SliderFloat("Scale", &scale, 0.0f, 5.0f))
+		if (ImGui::SliderFloat("Scale", &scale, MIN_SCALE, MAX_SCALE))
+		{
+			resetSceneMatrix();
+			resetSubdivisions();
+		}
+		if (ImGui::SliderFloat3("Translation", aa::value_ptr(translation), -MOVEMENT_LIMITS, MOVEMENT_LIMITS))
 		{
 			resetSceneMatrix();
 			resetSubdivisions();
 		}
 	}
 	ImGui::Separator();
+	if (ImGui::CollapsingHeader("Light settings"))
+	{
+		if (ImGui::ColorEdit3("Light Color", aa::value_ptr(lightColor)))
+		{
+			resetSubdivisions();
+		}
+		if (ImGui::SliderFloat("Brightness", &lightBrightness, 0.0f, 2.0f))
+		{
+			resetSubdivisions();
+		}
+	}
+	ImGui::Separator();
 	static aa::vec3 ellipsoidRadii(0.1f, 0.5f, 0.8f);
-	if (ImGui::CollapsingHeader("Ellipsoid parameters:"))
+	if (ImGui::CollapsingHeader("Ellipsoid parameters", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		//ImGui::InputFloat3("Center", aa::value_ptr(ellipsoid.center));
 		if (ImGui::InputFloat3("Radii", aa::value_ptr(ellipsoidRadii)))
@@ -123,7 +140,7 @@ void Scene::DrawScene(unsigned int subdivisions)
 
 						aa::vec3 color =
 							ellipsoid.getColor(
-								aa::vec2(NDCChunkCenterX, NDCChunkCenterY), cameraPos);
+								aa::vec2(NDCChunkCenterX, NDCChunkCenterY), cameraPos, lightColor * lightBrightness);
 						wasRendered[pointer] = true;
 
 						for (int localX = 0; localX < chunkWidth; localX++)
@@ -177,7 +194,7 @@ void Scene::DrawScene(unsigned int subdivisions)
 void Scene::resetSceneMatrix()
 {
 	//std::cout << "pitch: " << pitch << ", yaw: " << yaw << "\n";
-	sceneMatrix = /*aa::translate(aa::vec3(0.0f, 0.0f, -2.0f)) */ aa::rotate(aa::Y, -aa::radians(yaw)) * aa::rotate(aa::X, aa::radians(pitch)) * aa::scale(aa::vec3(1.0f / scale, 1.0f / scale, 1.0f / scale));
+	sceneMatrix = aa::rotate(aa::Y, -aa::radians(yaw)) * aa::rotate(aa::X, aa::radians(pitch)) * aa::scale(aa::vec3(1.0f / scale, 1.0f / scale, 1.0f / scale)) * aa::translate(translation);
 }
 
 void Scene::resetSubdivisions()
