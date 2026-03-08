@@ -51,6 +51,11 @@ void Scene::DrawScene(unsigned int subdivisions)
 			resetSceneMatrix();
 			resetSubdivisions();
 		}
+		if (ImGui::SliderFloat("Scale", &scale, 0.0f, 5.0f))
+		{
+			resetSceneMatrix();
+			resetSubdivisions();
+		}
 	}
 	ImGui::Separator();
 	static aa::vec3 ellipsoidRadii(0.1f, 0.5f, 0.8f);
@@ -66,6 +71,11 @@ void Scene::DrawScene(unsigned int subdivisions)
 	ImGui::End();
 
 	// Rendering the ellipsoid to the texture
+	//aa::vec3 cameraPos = aa::vec3(sin(aa::radians(yaw)),sin(aa::radians(pitch)),cos(-aa::radians(yaw))) * 10.0f;
+	aa::vec3 cameraPos(0.0f, 0.0f, -6.0f);
+	std::cout << "Camera Position = ( x: " << cameraPos.x << " y: " << cameraPos.y << " z: " << cameraPos.z << "\n";
+	//aa::vec3 cameraPos = aa::vec3(0.0f, sin(aa::radians(pitch)), 0.0f) * 0.5f;
+
 	resetSceneMatrix();
 	ellipsoid.updateSceneMatrix(sceneMatrix);// aa::mat4(1.0f, 1.0f, 1.0f, 1.0f));
 	int chunkWidth = windowWidth / subdivisions;
@@ -113,7 +123,7 @@ void Scene::DrawScene(unsigned int subdivisions)
 
 						aa::vec3 color =
 							ellipsoid.getColor(
-								aa::vec2(NDCChunkCenterX, NDCChunkCenterY));
+								aa::vec2(NDCChunkCenterX, NDCChunkCenterY), cameraPos);
 						wasRendered[pointer] = true;
 
 						for (int localX = 0; localX < chunkWidth; localX++)
@@ -166,8 +176,8 @@ void Scene::DrawScene(unsigned int subdivisions)
 }
 void Scene::resetSceneMatrix()
 {
-	std::cout << "pitch: " << pitch << ", yaw: " << yaw << "\n";
-	sceneMatrix = /*aa::translate(aa::vec3(0.0f, 0.0f, -2.0f)) */ aa::rotate(aa::Y, -aa::radians(yaw)) * aa::rotate(aa::X, aa::radians(pitch));
+	//std::cout << "pitch: " << pitch << ", yaw: " << yaw << "\n";
+	sceneMatrix = /*aa::translate(aa::vec3(0.0f, 0.0f, -2.0f)) */ aa::rotate(aa::Y, -aa::radians(yaw)) * aa::rotate(aa::X, aa::radians(pitch)) * aa::scale(aa::vec3(1.0f / scale, 1.0f / scale, 1.0f / scale));
 }
 
 void Scene::resetSubdivisions()

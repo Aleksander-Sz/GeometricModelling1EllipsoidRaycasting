@@ -317,6 +317,7 @@ namespace aa {
 			return lower;
 		if (scalar > upper)
 			return upper;
+		return scalar;
 	}
 	vec2 clip(vec2 vector, float lower, float upper)
 	{

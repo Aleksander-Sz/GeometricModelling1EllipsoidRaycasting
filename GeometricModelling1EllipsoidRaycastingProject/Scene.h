@@ -28,6 +28,7 @@ public:
 	GLuint texture;
 	void DrawScene(unsigned int subdivisions);
 	float pitch, yaw;
+	float scale = 1.0f;
 	float zoom;
 	void resetSceneMatrix();
 	unsigned int subdivisions = 7;
