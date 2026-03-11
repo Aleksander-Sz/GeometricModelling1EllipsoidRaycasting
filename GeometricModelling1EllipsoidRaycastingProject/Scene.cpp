@@ -5,7 +5,7 @@ Scene::Scene(int _windowWidth, int _windowHeight, Shader _shader)
 	//camera = Camera(windowWidth, windowHeight);
 	windowWidth = _windowWidth;
 	windowHeight = _windowHeight;
-    shader = _shader;
+	shader = _shader;
 	framebuffer = std::vector<uint8_t>(windowWidth * windowHeight * 3);
 	wasRendered = std::vector<bool>(windowWidth * windowHeight);
 
@@ -37,7 +37,6 @@ void Scene::DrawScene(unsigned int subdivisions)
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 	ImGui::Begin("Menu");
-	ImGui::Text("Use WASD to move, mouse to look around, scroll to zoom.");
 	ImGui::Separator();
 	if (ImGui::CollapsingHeader("Scene Transformations"))
 	{
@@ -65,13 +64,24 @@ void Scene::DrawScene(unsigned int subdivisions)
 	ImGui::Separator();
 	if (ImGui::CollapsingHeader("Light settings"))
 	{
-		if (ImGui::ColorEdit3("Light Color", aa::value_ptr(lightColor)))
+		if(ImGui::SliderFloat("Light Intensity", &lightIntensity, 1.0f, 32.0f))
 		{
 			resetSubdivisions();
 		}
-		if (ImGui::SliderFloat("Brightness", &lightBrightness, 0.0f, 2.0f))
+		if (ImGui::Checkbox("Enable complete Phong lighting", &fullPhong))
 		{
 			resetSubdivisions();
+		}
+		if (fullPhong)
+		{
+			if (ImGui::ColorEdit3("Light Color", aa::value_ptr(lightColor)))
+			{
+				resetSubdivisions();
+			}
+			/*if (ImGui::SliderFloat("Brightness", &lightBrightness, 0.0f, 2.0f))
+			{
+				resetSubdivisions();
+			}*/
 		}
 	}
 	ImGui::Separator();
@@ -80,7 +90,10 @@ void Scene::DrawScene(unsigned int subdivisions)
 	{
 		//ImGui::InputFloat3("Center", aa::value_ptr(ellipsoid.center));
 		if (ImGui::InputFloat3("Radii", aa::value_ptr(ellipsoidRadii)))
+		{
 			ellipsoid.setRadii(ellipsoidRadii);
+			resetSubdivisions();
+		}
 	}
 	ImGui::Text("Subdivisions: %d", subdivisions);
 	ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
@@ -90,7 +103,7 @@ void Scene::DrawScene(unsigned int subdivisions)
 	// Rendering the ellipsoid to the texture
 	//aa::vec3 cameraPos = aa::vec3(sin(aa::radians(yaw)),sin(aa::radians(pitch)),cos(-aa::radians(yaw))) * 10.0f;
 	aa::vec3 cameraPos(0.0f, 0.0f, -6.0f);
-	std::cout << "Camera Position = ( x: " << cameraPos.x << " y: " << cameraPos.y << " z: " << cameraPos.z << "\n";
+	//std::cout << "Camera Position = ( x: " << cameraPos.x << " y: " << cameraPos.y << " z: " << cameraPos.z << "\n";
 	//aa::vec3 cameraPos = aa::vec3(0.0f, sin(aa::radians(pitch)), 0.0f) * 0.5f;
 
 	resetSceneMatrix();
@@ -140,7 +153,7 @@ void Scene::DrawScene(unsigned int subdivisions)
 
 						aa::vec3 color =
 							ellipsoid.getColor(
-								aa::vec2(NDCChunkCenterX, NDCChunkCenterY), cameraPos, lightColor * lightBrightness);
+								aa::vec2(NDCChunkCenterX, NDCChunkCenterY), cameraPos, lightColor, fullPhong, lightIntensity);
 						wasRendered[pointer] = true;
 
 						for (int localX = 0; localX < chunkWidth; localX++)

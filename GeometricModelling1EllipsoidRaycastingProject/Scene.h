@@ -32,13 +32,15 @@ public:
 	GLuint texture;
 	void DrawScene(unsigned int subdivisions);
 	float pitch, yaw;
-	aa::vec3 translation = aa::vec3(0.0f);
+	aa::vec3 translation = aa::vec3(0.0f, 0.0f, -2.0f);
 	float scale = 1.0f;
 	aa::vec3 lightColor = aa::vec3(0.5f, 0.5f, 0.0f);
 	float lightBrightness = 1.0f;
 	void resetSceneMatrix();
 	unsigned int subdivisions = 7;
 	void resetSubdivisions();
+	bool fullPhong = false;
+	float lightIntensity = 2.0f;
 private:
 	aa::mat4 sceneMatrix = aa::mat4(1.0f);
 };

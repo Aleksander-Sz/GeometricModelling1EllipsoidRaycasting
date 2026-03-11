@@ -78,11 +78,11 @@ void Ellipsoid::PrepareForDrawing()
     I = 0.5f * (Q[2][3] + Q[3][2]);
     J = Q[3][3];
 }
-aa::vec3 Ellipsoid::getColor(aa::vec2 v, aa::vec3 cameraPos, aa::vec3 lightColor)
+aa::vec3 Ellipsoid::getColor(aa::vec2 v, aa::vec3 cameraPos, aa::vec3 lightColor, bool fullPhong, float m)
 {
 	if (dirty)
 		PrepareForDrawing();
-	aa::vec3 backgroundColor(0.1f, 0.5f, 0.3f);
+	aa::vec3 backgroundColor(0.0f, 0.0f, 0.0f);
 
 	// now let's create the quadratic equasion based on this matrix
 	//		| A B C D |				
@@ -141,18 +141,22 @@ aa::vec3 Ellipsoid::getColor(aa::vec2 v, aa::vec3 cameraPos, aa::vec3 lightColor
 	//return (normal+1)/2.0f;
 	//return ( cameraPos + 1.0f ) / 2.0f;
 
-	aa::vec3 ambient(0.1f, 0.1f, 0.1f), diffuse = lightColor, specular(1.0f, 1.0f, 1.0f);
+	aa::vec3 ambient(0.1f, 0.1f, 0.1f), diffuse = lightColor, specular(1.0f, 1.0f, 0.0f);
 	aa::vec3 p(x, y, z);
-	aa::vec3 lightPos = aa::vec3(0.0f,0.0f,-10.0f);
-	aa::vec3 pos(0.0f, 0.0f, -10.0f);
+	aa::vec3 pos(0.0f, 0.0f, 0.0f);
 	aa::vec3 lightDirection = aa::normalize(pos - p);
 	aa::vec3 viewDirection = aa::normalize(pos - p);// return (viewDirection+1.0f)/2.0f;
+	aa::vec3 R = reflect(-lightDirection, normal);
+	float spec = pow(std::fmax(dot(R, viewDirection), 0), m);
+	if (!fullPhong)
+	{
+		return aa::vec3(1.0f, 1.0f, 0.0f) * spec;
+	}
+	//aa::vec3 lightPos = aa::vec3(0.0f,0.0f,-10.0f);
 	//aa::vec3 lightDirection = viewDirection;
 	if (aa::dot(normal, viewDirection) < 0.0f)
 		return aa::vec3(0.0f, 0.0f, 0.0f);
 	float diff = std::fmax(dot(normal, lightDirection), 0.0f);
-	aa::vec3 R = reflect(-lightDirection, normal);
-	float spec = pow(std::fmax(dot(R, viewDirection), 0), 8.0f);
 	return aa::clip(
 		ambient +
 		diffuse * diff +

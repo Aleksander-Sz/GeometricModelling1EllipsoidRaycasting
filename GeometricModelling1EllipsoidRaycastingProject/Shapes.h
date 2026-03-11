@@ -24,7 +24,7 @@ class Ellipsoid
 {
 public:
 	Ellipsoid(float a, float b, float c);
-	aa::vec3 getColor(aa::vec2 v, aa::vec3 cameraPos, aa::vec3 lightColor);
+	aa::vec3 getColor(aa::vec2 v, aa::vec3 cameraPos, aa::vec3 lightColor, bool fullPhong, float m);
 	void updateSceneMatrix(aa::mat4 _sceneMatrix);
 	void setRadii(aa::vec3 _radii);
 private:
